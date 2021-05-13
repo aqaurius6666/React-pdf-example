@@ -28,10 +28,10 @@ function App() {
     
     const { pageX, target } = event
     const {offsetLeft, offsetWidth } = target
-    if (target.nodeName !== "CANVAS") {
-      console.log("Out")
-      return
-    }
+    // if (target.nodeName !== "CANVAS") {
+    //   console.log("Out")
+    //   return
+    // }
     const d = Math.floor(offsetWidth/3)
     const relativeX = pageX - offsetLeft 
     if (relativeX > 0 && relativeX < d) {
@@ -48,7 +48,7 @@ function App() {
   return (
     <div className="App">
       <Document file="sample.pdf" onLoadSuccess={onDocumentLoadSuccess}>
-        <Page className="my-class" onClick={handleOnClick} height="1080" pageNumber={pageNumber} onLoadSuccess={removeTextLayerOffset} />
+        <Page className="my-class" onClick={handleOnClick} renderTextLayer={false} height="1080" pageNumber={pageNumber} onLoadSuccess={removeTextLayerOffset} />
       </Document>
       <button
         onClick={() => {
