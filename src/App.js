@@ -36,11 +36,13 @@ function App() {
     const relativeX = pageX - offsetLeft 
     if (relativeX > 0 && relativeX < d) {
       console.log("LEFT")
-      setPageNumber(pageNumber - 1)
+      if (pageNumber > 1) setPageNumber(pageNumber - 1)
+      else console.log("At 1")
     }
     if (relativeX > d*2 && relativeX < d*3) {
       console.log("RIGHT")
-      setPageNumber(pageNumber + 1)
+      if (pageNumber < numPages) setPageNumber(pageNumber + 1)
+      else console.log(`At ${numPages}`)
     }
     if (relativeX > d*1 && relativeX < d*2) console.log("Mid")
 
