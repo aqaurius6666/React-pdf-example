@@ -1,29 +1,59 @@
+import React, { useEffect, useState, useMemo } from 'react';
+import { pdfjs, Document, Page } from 'react-pdf';
+import axios from 'axios'
 import './App.css';
-import { Document, Page, pdfjs } from 'react-pdf';
-// import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import { useState } from 'react';
-const samples = ['AFISH_sample_210224.pdf', 'TEN0_sample_210224.pdf', 'TEN1_sample_210224.pdf', 'TEN2_sample_210224.pdf']
-function App() {
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
+
+function Test() {
+  const [data, setData] = useState(null)
+  const [dataId, setDataId] = useState(0)
+
+  const getPDF = async (dataId, startPage) => {
+    console.log(`http://localhost:2999/api/readManga/${dataId}/${startPage}`)
+    return axios.get(`http://localhost:2999/api/readManga/${dataId}/${startPage}`)
+      .then(res => res.data)
+      .then(data => Uint8Array.from(data.data.data))
+  }
+  useEffect(() => {
+    getPDF(dataId, 0).then(data => setData(data))
+  }, [dataId])
+  const nextChap = () => {
+    setDataId((dataId + 1 + 4) % 4)
+  }
+  const preChap = () => {
+    setDataId((dataId - 1 + 4) % 4)
+  }
+  return (
+    <Render data={data} preChap={preChap} nextChap={nextChap}/>
+  )
+}
+
+function Render({ data, preChap, nextChap }) {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
+  const [renderedPageNumber, setRenderedPageNumber] = useState(null);
   const [isShow, setIsShow] = useState(false)
-  const [pageId, setPageId] = useState(0)
-  pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+  const file = useMemo(() => {
+    setPageNumber(1)
+    setRenderedPageNumber(null)
+    setIsShow(false)
+    return {data}
+  }, [data])
 
   function onDocumentLoadSuccess({ numPages }) {
     setNumPages(numPages);
   }
+  function changePage(offset) {
+    setPageNumber((prevPageNumber) => prevPageNumber + offset);
+  }
 
-  function removeTextLayerOffset() {
-    const textLayers = document.querySelectorAll(
-      '.react-pdf__Page__textContent'
-    );
-    textLayers.forEach((layer) => {
-      const { style } = layer;
-      style.top = '0';
-      style.left = '0';
-      style.transform = '';
-    });
+  function previousPage() {
+    changePage(-1);
+  }
+
+  function nextPage() {
+    changePage(1);
   }
   const handleOnClick = (event) => {
 
@@ -37,12 +67,12 @@ function App() {
     const relativeX = pageX - offsetLeft
     if (relativeX > 0 && relativeX < d) {
       console.log("LEFT")
-      if (pageNumber > 1) setPageNumber(pageNumber - 1)
+      if (pageNumber > 1) previousPage()
       else console.log("At 1")
     }
     if (relativeX > d * 2 && relativeX < d * 3) {
       console.log("RIGHT")
-      if (pageNumber < numPages) setPageNumber(pageNumber + 1)
+      if (pageNumber < numPages) nextPage()
       else console.log(`At ${numPages}`)
     }
     if (relativeX > d * 1 && relativeX < d * 2) {
@@ -52,28 +82,42 @@ function App() {
     }
 
   }
-  return (
-    <div className="App">
-      { isShow && <div className="row overlay">
-        <button onClick={() => {
-          setPageId((pageId - 1 + samples.length) % samples.length)
-          setPageNumber(1)
-        }}>
-          Previous
-      </button>
-        <button onClick={() => {
-          setPageId((pageId + 1 + samples.length) % samples.length)
-          setPageNumber(1)
-        }}>
-          Next
-      </button>
-      </div>}
-      <Document file={samples[pageId]} onLoadSuccess={onDocumentLoadSuccess}>
+  const isLoading = renderedPageNumber !== pageNumber;
 
-        <Page className="my-class" onClick={handleOnClick} height="1000" renderTextLayer={false} pageNumber={pageNumber} onLoadSuccess={removeTextLayerOffset} />
+  return (
+    <React.Fragment>
+      {isShow && <div className="overlay">
+        <p>
+          Page {pageNumber || (numPages ? 1 : '--')} of {numPages || '--'}
+        </p>
+        <button type="button" onClick={preChap}>
+          Pre
+        </button>
+        <button type="button" onClick={nextChap}>
+          Next
+        </button>
+      </div>}
+      <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
+        {isLoading && renderedPageNumber ? (
+          <Page
+            key={renderedPageNumber}
+            className="prevPage"
+            pageNumber={renderedPageNumber}
+            width="400"
+            onClick={handleOnClick}
+          />
+        ) : null}
+        <Page
+          key={pageNumber}
+          pageNumber={pageNumber}
+          onRenderSuccess={() => setRenderedPageNumber(pageNumber)}
+          width="400"
+          onClick={handleOnClick}
+        />
       </Document>
-    </div>
+
+    </React.Fragment>
   );
 }
 
-export default App;
+export default Test;
