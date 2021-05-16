@@ -1,0 +1,32 @@
+.react-pdf__Page.prevPage {
+    position: absolute !important;
+    z-index: 10;
+  }
+
+  .react-pdf__Page.animation-to-right {
+      animation: left-to-right 100ms ease-in forwards;
+  }
+  .react-pdf__Page.animation-to-left {
+    animation: right-to-left 100ms ease-in forwards;
+}
+
+  @keyframes left-to-right {
+      100% {
+          left: 400px;
+          opacity: 0;
+      }
+      0% {
+          left: 0px;
+      }
+  }
+  @keyframes right-to-left {
+    100% {
+        left: -400px;
+        opacity: 0;
+    }
+    0% {
+        left: 0px;
+    }
+}
+
+

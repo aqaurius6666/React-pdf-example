@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<header>
+
+</header>
+<style>
+    .outer {
+        position: absolute;
+        transition: transform 100ms;
+    }
+    .inner {
+        position: absolute;
+        z-index: -10;
+    }
+    .wrap:hover .outer{
+        animation: left-to-right 500ms ease-in forwards;
+    }
+    @keyframes left-to-right {
+        100% {
+            left: -400px;
+            opacity: 0;
+        }
+        0% {
+            left: 0px;
+        }
+        
+    }
+</style>
+<body>
+    <div class="wrap">
+        <img src="https://scontent-hkg4-1.xx.fbcdn.net/v/t1.6435-9/116265661_938972979841411_209738755324837585_n.jpg?_nc_cat=108&ccb=1-3&_nc_sid=174925&_nc_ohc=f_z2n6byeeEAX-vH1Uk&_nc_ht=scontent-hkg4-1.xx&oh=f337a405313eee3727ec30621b908bba&oe=60C6F82A"
+        width="400px"
+        height="400px"
+        class="outer"
+        >
+        <img src="https://scontent.fhan3-1.fna.fbcdn.net/v/t1.6435-9/125152762_1023968521341856_1905343176668110712_n.jpg?_nc_cat=102&ccb=1-3&_nc_sid=174925&_nc_ohc=JrECs5_tbC4AX_C5bnR&_nc_ht=scontent.fhan3-1.fna&oh=a2cbe2fbbed50df125326aacb26dd574&oe=60C722EC"
+        width="400px"
+        height="400px"
+        class="inner"
+        >
+    </div>
+</body>

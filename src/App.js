@@ -8,41 +8,69 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
 function Test() {
   const [data, setData] = useState(null)
   const [dataId, setDataId] = useState(0)
+  const [start, setStart] = useState(0)
+  const [end, setEnd] = useState(null)
+  const [canNext, setCanNext] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
+
 
   const getPDF = async (dataId, startPage) => {
     console.log(`http://localhost:2999/api/readManga/${dataId}/${startPage}`)
     return axios.get(`http://localhost:2999/api/readManga/${dataId}/${startPage}`)
       .then(res => res.data)
-      .then(data => Uint8Array.from(data.data.data))
+      .then(({ data }) => data)
   }
   useEffect(() => {
-    getPDF(dataId, 0).then(data => setData(data))
-  }, [dataId])
+    getPDF(dataId, start).then(({ buffer, start, end, canNext }) => {
+      console.log(start, end, canNext)
+      setData(Uint8Array.from(buffer.data))
+      setStart(start)
+      setEnd(end)
+      setCanNext(canNext)
+    })
+  }, [dataId, start])
   const nextChap = () => {
     setDataId((dataId + 1 + 4) % 4)
+    setCurrentPage(1)
   }
   const preChap = () => {
     setDataId((dataId - 1 + 4) % 4)
+    setCurrentPage(1)
+
+  }
+  const readNext = () => {
+    if (canNext) {
+      setStart(end)
+      setCurrentPage(1)
+    }
+  }
+  const readBack = () => {
+    setCurrentPage(start)
+    if (start - 15 < 0) setStart(0)
+    else setStart(start - 15)
+
   }
   return (
-    <Render data={data} preChap={preChap} nextChap={nextChap}/>
+    <Render data={data} preChap={preChap} nextChap={nextChap} readNext={readNext} readBack={readBack} currentPage={currentPage} />
   )
 }
 
-function Render({ data, preChap, nextChap }) {
+function Render({ data, preChap, nextChap, readNext, readBack, currentPage }) {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [renderedPageNumber, setRenderedPageNumber] = useState(null);
   const [isShow, setIsShow] = useState(false)
+  const [className, setClassName] = useState("")
   const file = useMemo(() => {
     setPageNumber(1)
     setRenderedPageNumber(null)
     setIsShow(false)
-    return {data}
+    return { data }
   }, [data])
 
   function onDocumentLoadSuccess({ numPages }) {
     setNumPages(numPages);
+    setPageNumber(currentPage)
   }
   function changePage(offset) {
     setPageNumber((prevPageNumber) => prevPageNumber + offset);
@@ -67,11 +95,13 @@ function Render({ data, preChap, nextChap }) {
     const relativeX = pageX - offsetLeft
     if (relativeX > 0 && relativeX < d) {
       console.log("LEFT")
+      if (pageNumber === 1) readBack()
       if (pageNumber > 1) previousPage()
       else console.log("At 1")
     }
     if (relativeX > d * 2 && relativeX < d * 3) {
       console.log("RIGHT")
+      if (pageNumber === numPages) readNext()
       if (pageNumber < numPages) nextPage()
       else console.log(`At ${numPages}`)
     }
@@ -98,19 +128,20 @@ function Render({ data, preChap, nextChap }) {
         </button>
       </div>}
       <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
-        {isLoading && renderedPageNumber ? (
-          <Page
-            key={renderedPageNumber}
-            className="prevPage"
-            pageNumber={renderedPageNumber}
-            width="400"
-            onClick={handleOnClick}
-          />
-        ) : null}
+        <Page
+          key={renderedPageNumber}
+          className={`prevPage ${className}`}
+          pageNumber={renderedPageNumber}
+          width="400"
+          onClick={handleOnClick}
+        />
         <Page
           key={pageNumber}
           pageNumber={pageNumber}
-          onRenderSuccess={() => setRenderedPageNumber(pageNumber)}
+          onRenderSuccess={() => {
+            setRenderedPageNumber(pageNumber)
+            setClassName("transition-class")
+          }}
           width="400"
           onClick={handleOnClick}
         />
