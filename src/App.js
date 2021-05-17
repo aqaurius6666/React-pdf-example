@@ -60,7 +60,7 @@ function Render({ data, preChap, nextChap, readNext, readBack, currentPage }) {
   const [pageNumber, setPageNumber] = useState(1);
   const [renderedPageNumber, setRenderedPageNumber] = useState(null);
   const [isShow, setIsShow] = useState(false)
-  const [className, setClassName] = useState("")
+  const [transitionClass, setTransitionClass] = useState()
   const file = useMemo(() => {
     setPageNumber(1)
     setRenderedPageNumber(null)
@@ -69,6 +69,7 @@ function Render({ data, preChap, nextChap, readNext, readBack, currentPage }) {
   }, [data])
 
   function onDocumentLoadSuccess({ numPages }) {
+    console.log(11)
     setNumPages(numPages);
     setPageNumber(currentPage)
   }
@@ -84,7 +85,7 @@ function Render({ data, preChap, nextChap, readNext, readBack, currentPage }) {
     changePage(1);
   }
   const handleOnClick = (event) => {
-
+    setTransitionClass("")
     const { pageX, target } = event
     const { offsetLeft, offsetWidth } = target
     if (target.nodeName !== "CANVAS") {
@@ -112,6 +113,16 @@ function Render({ data, preChap, nextChap, readNext, readBack, currentPage }) {
     }
 
   }
+
+  const callTransitionClass = () => {
+    console.log(renderedPageNumber, pageNumber)
+    if (renderedPageNumber < pageNumber) {
+      setTransitionClass('animation-too-left')
+      return
+    }
+    setTransitionClass('animation-too-right')
+    return
+  }
   const isLoading = renderedPageNumber !== pageNumber;
 
   return (
@@ -127,24 +138,37 @@ function Render({ data, preChap, nextChap, readNext, readBack, currentPage }) {
           Next
         </button>
       </div>}
-      <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
-        <Page
-          key={renderedPageNumber}
-          className={`prevPage ${className}`}
-          pageNumber={renderedPageNumber}
-          width="400"
-          onClick={handleOnClick}
-        />
-        <Page
-          key={pageNumber}
-          pageNumber={pageNumber}
-          onRenderSuccess={() => {
-            setRenderedPageNumber(pageNumber)
-            setClassName("transition-class")
-          }}
-          width="400"
-          onClick={handleOnClick}
-        />
+      <Document file={file} onLoadSuccess={onDocumentLoadSuccess} >
+        {(
+          <div
+            style={{ position: 'absolute', width: '100%', textAlign: '-webkit-center' }}
+          >
+            <Page
+              key={renderedPageNumber}
+              className={`prevPage ${transitionClass}`}
+              pageNumber={renderedPageNumber}
+
+              width="400"
+              onClick={handleOnClick}
+            />
+          </div>
+        )}
+        <div
+          style={{ position: 'absolute', width: '100%', textAlign: '-webkit-center' }}
+        >
+          <Page
+            key={pageNumber}
+            pageNumber={pageNumber}
+            onRenderSuccess={() => {
+              callTransitionClass()
+              setRenderedPageNumber(pageNumber)
+            }}
+            width="400"
+            onClick={handleOnClick}
+          />
+        </div>
+
+
       </Document>
 
     </React.Fragment>

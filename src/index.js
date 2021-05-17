@@ -7,7 +7,7 @@ import Render from './Sample';
 
 ReactDOM.render(
   <React.StrictMode>
-    <Render />
+    <App />
   </React.StrictMode>,
   document.getElementById('root')
 );

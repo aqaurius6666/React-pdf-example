@@ -12,8 +12,7 @@
     height: 100%;
     z-index: 10;
     background-color: rgba(0,0,0,0.5); /*dim the background*/
-}
-
+} 
 .blur {
     position: absolute;
     z-index: 10;
@@ -22,11 +21,38 @@
     background-color: rgba(0,0,0,0.5); 
 }
 
+/* .react-pdf__Page__canvas {
+    display:block; 
+    margin: auto;
+} */
+  .react-pdf__Page.animation-too-right {
+    animation: left-to-right 100ms cubic-bezier(.95,0,.35,1.02) forwards;
+}
+.react-pdf__Page.animation-too-left {
+  animation: right-to-left 100ms cubic-bezier(.95,0,.35,1.02) forwards ;
+
+}
+
+
 .react-pdf__Page.prevPage {
-    position: absolute !important;
-    z-index: 10;
+    /* position: absolute !important; */
+    z-index: 100;
   }
 
-.react-pdf__Page.transition-class {
-    margin-right: 100;
+@keyframes left-to-right {
+    100% {
+        opacity: 0;
+        transform: translateX(200%) }
+    0% {
+        /* transform: translateX(0); */
+    }
 }
+@keyframes right-to-left {
+  100% {
+      opacity: 0;
+      transform: translateX(-100%); }
+  0% {
+      /* transform: translateX(0); */
+    }
+}
+
